@@ -8,31 +8,23 @@
       const ctx = canvas.getContext('2d');
       const all_list = [];
 
-      // Create red balls
-      for (let i = 0; i < 15; i++) {
+      // Create balls
+      function create(fill,r,amt) {
+      for (let i = 0; i < amt; i++) {
         const ball = {
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           vx: 0,
           vy: 0,
-          radius: 5,
-          color: 'red'
+          radius: r,
+          color: fill
         };
         all_list.push(ball);
       }
-
-      // Create blue balls
-      for (let i = 15; i < 30; i++) {
-        const ball = {
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: 0,
-          vy: 0,
-          radius: 5,
-          color: 'blue'
-        };
-        all_list.push(ball);
       }
+	create('red',5,30)
+    create('blue',5,30)
+    create('green',3,20)
 
       function drawBall(ball) {
         ctx.beginPath();
@@ -64,11 +56,16 @@
           ball.y = ball.radius;
           ball.vy = -ball.vy;
         }
-        applyAttraction('blue','red',-3)
-        applyAttraction('red','blue',5)
+        applyAttraction('blue','red',-10)
+        applyAttraction('red','red',20)
+        applyAttraction('blue','green',-10)
+        applyAttraction('blue','blue',20)
+        applyAttraction('red','blue',-10)
+        applyAttraction('red','green',-10)
         
-        ball.vx = ball.vx/1.1
-        ball.vy = ball.vy/1.1
+        ball.vx = ball.vx/1.5
+        ball.vy = ball.vy/1.5
+        
       }
 
       function applyAttraction(originColor, affectedColor, force) {
@@ -84,15 +81,21 @@
                 y: all_list[e].y - ball.y
               };
               const distance = Math.hypot(delta.x, delta.y);
-              const magnitude = force / (distance * distance);
+			if (distance<4) {
+              continue
+              }
+              
+              const magnitude = (force) / ((distance * distance));
               const forceVector = {
                 x: delta.x * magnitude / distance,
                 y: delta.y * magnitude / distance
               };
 
-              // Apply force to move affected balls towards origin balls
-              all_list[e].vx += forceVector.x;
-              all_list[e].vy += forceVector.y;
+              // Apply force to move affected balls towards origin balls		
+			 
+              all_list[e].vx += forceVector.x/all_list[e].radius;
+              all_list[e].vy += forceVector.y/all_list[e].radius;
+              
             }
           }
         }
