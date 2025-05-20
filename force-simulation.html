@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+
+    <script>
+      const canvas = document.getElementById('myCanvas');
+      const ctx = canvas.getContext('2d');
+      const all_list = [];
+
+      // Create red balls
+      for (let i = 0; i < 15; i++) {
+        const ball = {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: 0,
+          vy: 0,
+          radius: 5,
+          color: 'red'
+        };
+        all_list.push(ball);
+      }
+
+      // Create blue balls
+      for (let i = 15; i < 30; i++) {
+        const ball = {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: 0,
+          vy: 0,
+          radius: 5,
+          color: 'blue'
+        };
+        all_list.push(ball);
+      }
+
+      function drawBall(ball) {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fillStyle = ball.color;
+        ctx.fill();
+      }
+
+      function updateBall(ball) {
+      
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        // Check for collisions with canvas boundaries
+        if (ball.x + ball.radius >= canvas.width) {
+          ball.x = canvas.width - ball.radius;
+          ball.vx = -ball.vx;
+        }
+        if (ball.y + ball.radius >= canvas.height) {
+          ball.y = canvas.height - ball.radius;
+          ball.vy = -ball.vy;
+        }
+        if (ball.x - ball.radius <= 0) {
+          ball.x = ball.radius;
+          ball.vx = -ball.vx;
+        }
+        if (ball.y - ball.radius <= 0) {
+          ball.y = ball.radius;
+          ball.vy = -ball.vy;
+        }
+        applyAttraction('blue','red',-3)
+        applyAttraction('red','blue',5)
+        
+        ball.vx = ball.vx/1.1
+        ball.vy = ball.vy/1.1
+      }
+
+      function applyAttraction(originColor, affectedColor, force) {
+        for (let i = 0; i < all_list.length; i++) {
+          const ball = all_list[i];
+          if (ball.color === originColor) {
+            for (let e = 0; e < all_list.length; e++) {
+              if (ball === all_list[e] || all_list[e].color !== affectedColor) {
+                continue;
+              }
+              const delta = {
+                x: all_list[e].x - ball.x,
+                y: all_list[e].y - ball.y
+              };
+              const distance = Math.hypot(delta.x, delta.y);
+              const magnitude = force / (distance * distance);
+              const forceVector = {
+                x: delta.x * magnitude / distance,
+                y: delta.y * magnitude / distance
+              };
+
+              // Apply force to move affected balls towards origin balls
+              all_list[e].vx += forceVector.x;
+              all_list[e].vy += forceVector.y;
+            }
+          }
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        applyAttraction();
+        for (let i = 0; i < all_list.length; i++) {
+          updateBall(all_list[i]);
+          drawBall(all_list[i]);
+        }
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
